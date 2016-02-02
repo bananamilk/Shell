@@ -5,13 +5,19 @@ while [ -f $logfile_name ]; do
  	logfile_name=add_users_`date +%Y_%m_%d`_0$i.log
  	let i+=1
 done
-for username in $(cat demo.txt); do
+cat demo.txt | while read line; do
+	username=`echo $line | awk '{print $1}'`
+	password=`echo $line | awk '{print $2}'`
 	user=`awk -F : '{print $1}' /etc/passwd | grep "\<$username\>"`
-	 if [ "$username" == "$user" ]; then
+	if [ -z $password ]; then
+		password=demo
+	fi
+	if [ "$username" == "$user" ]; then
   		echo "The user $username exists"
-  		echo "$user: username creates failure" >> $logfile_name 
+  		echo "$user: username creates failure,user exists." >> $logfile_name 
   		continue 
  	fi
 	useradd -d /home/$username $username
-	echo demo | passwd --stdin $username
+	echo $password | passwd --stdin $username
+	echo "$username : $password"
 done
